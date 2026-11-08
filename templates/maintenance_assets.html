@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Assets – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="screen-title mb-0"><i class="bi bi-hdd-rack me-2"></i>Assets</h1>
+    <a href="{{ url_for('maintenance_dashboard') }}" class="btn btn-outline-light btn-sm">← Dashboard</a>
+</div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header border-secondary"><h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Asset</h5></div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('asset_new') }}">
+                    <div class="mb-2"><label class="form-label">Name *</label><input type="text" name="name" class="form-control" required placeholder="e.g. Mixer 4"></div>
+                    <div class="mb-2"><label class="form-label">Asset Tag</label><input type="text" name="asset_tag" class="form-control" placeholder="MX-04"></div>
+                    <div class="mb-2"><label class="form-label">Department</label>
+                        <select name="department_id" class="form-select"><option value="">— Unassigned —</option>
+                        {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Description</label><input type="text" name="description" class="form-control"></div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6"><label class="form-label">Shift start</label><input type="time" name="shift_start" class="form-control" value="06:00"></div>
+                        <div class="col-6"><label class="form-label">Shift end</label><input type="time" name="shift_end" class="form-control" value="18:00"></div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6"><label class="form-label">Tea start</label><input type="time" name="tea_start" class="form-control" value="10:00"></div>
+                        <div class="col-6"><label class="form-label">Tea end</label><input type="time" name="tea_end" class="form-control" value="10:15"></div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6"><label class="form-label">Lunch start</label><input type="time" name="lunch_start" class="form-control" value="12:30"></div>
+                        <div class="col-6"><label class="form-label">Lunch end</label><input type="time" name="lunch_end" class="form-control" value="13:00"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Create Asset</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header border-secondary"><h5 class="mb-0">All Assets</h5></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>Name</th><th>Tag</th><th>Department</th><th>Running / Breaks</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                        {% for row in asset_rows %}{% set a = row.asset %}
+                        <tr>
+                            <td class="fw-semibold">{{ a.name }}</td>
+                            <td><code class="text-info">{{ a.asset_tag or '—' }}</code></td>
+                            <td>{{ a.department_name or '—' }}</td>
+                            <td class="small">{{ a.shift_start }}–{{ a.shift_end }}<br><span class="text-secondary">Tea {{ a.tea_start }}–{{ a.tea_end }} · Lunch {{ a.lunch_start }}–{{ a.lunch_end }}</span></td>
+                            <td><span class="status-badge status-{{ row.status_key }}">{{ row.status_label }}</span></td>
+                            <td><a href="{{ url_for('asset_detail', asset_id=a.id) }}" class="btn btn-sm btn-primary">Manage</a></td>
+                        </tr>
+                        {% else %}<tr><td colspan="6" class="text-center text-secondary py-4">No assets</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
