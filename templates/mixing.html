@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Mixer {{ station }} – Accent Portal{% endblock %}
+{% block extra_css %}
+.recipe-row {
+    background: #1e293b; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 0.75rem;
+    border-left: 5px solid #38bdf8; display: flex; justify-content: space-between; align-items: center;
+}
+.material-name { font-size: 1.35rem; font-weight: 600; }
+.qty-needed { font-size: 1.8rem; font-weight: 800; color: #38bdf8; }
+.stock-ok { color: #22c55e; } .stock-low { color: #ef4444; }
+{% endblock %}
+{% block content %}
+{% if order %}
+<div class="card mb-4 border-info">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="text-secondary">Mixing Station {{ station }} · Current Order</div>
+                <div class="display-6 fw-bold">{{ order.order_number }}</div>
+                <div class="fs-4">{{ order.product_name }}</div>
+                <div class="text-secondary">{{ order.customer or '' }}</div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="text-secondary">Target</div>
+                <div class="display-5 fw-bold">{{ "%.0f"|format(order.quantity_units or 0) }} <small class="fs-4">{{ order.unit_label or "units" }}</small></div>
+                <div class="fs-5 text-secondary">{{ "%.1f"|format(order.quantity_kg) }} kg total</div>
+            </div>
+        </div>
+    </div>
+</div>
+<h4 class="mb-3"><i class="bi bi-list-ul me-2"></i>Recipe – Weigh &amp; Add</h4>
+{% for item in recipe_items %}
+<div class="recipe-row">
+    <div>
+        <div class="material-name">{{ item.name }}</div>
+        <div class="small text-secondary">
+            {{ "%.2f"|format(item.weight_g_per_unit or 0) }} g per unit · Stock:
+            <span class="{% if item.stock < item.qty_needed %}stock-low{% else %}stock-ok{% endif %}">
+                {{ "%.1f"|format(item.stock) }} {{ item.unit }}
+            </span>
+        </div>
+    </div>
+    <div class="text-end">
+        <div class="qty-needed">{{ "%.2f"|format(item.qty_needed) }}</div>
+        <div class="small text-secondary">{{ item.unit }}</div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center text-secondary py-5">
+    <h3>Station {{ station }} idle</h3>
+    <p>No order assigned – assign from Admin</p>
+</div>
+{% endif %}
+{% endblock %}
