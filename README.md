@@ -1,58 +1,39 @@
-# Accent Manufacturing Portal  
-**Production + Maintenance** (adhesive putty plant)
+# Accent Manufacturing Portal
 
-Integrated web portal for Accent Manufacturing:
+Production + Maintenance portal for adhesive putty manufacturing.
 
-- **Production** – orders, recipes, stock, mixing stations, packing hall  
-- **Maintenance** – assets by department, running/tea/lunch schedules, downtime, planned maintenance & redundancy, upgrades with cloud-drive quote links, overview dashboard  
+## Features
 
-Built as a single Flask + SQLite app (same architecture as the original production workflow).
+- **Orders** – unit-based orders, auto recipe scale, stock deducted on order place
+- **Recipes** – products with unit size (g), ingredient g/unit or total-kg batch entry
+- **Stock** – live raw material levels
+- **Mixing / Packing** – station screens
+- **Maintenance** – assets, downtime, planned work, upgrades + quote links
 
-## Screens
+## Deploy on Render
 
-| Area | Path | Purpose |
-|------|------|---------|
-| Production Admin | `/` | Orders, stock, assign mixers |
-| Packing Hall | `/packing` | Large packing status board |
-| Mixing Station 1–3 | `/mixing/1` … `/3` | Recipe + weigh-out screens |
-| **Maintenance Dashboard** | `/maintenance` | Overview of all assets & departments |
-| **Assets** | `/maintenance/assets` | Create & list assets |
-| **Asset detail** | `/maintenance/asset/<id>` | Schedule, downtime, PM, upgrades |
-| **Departments** | `/maintenance/departments` | Mixing Hall, Production, … |
+1. Connect this GitHub repo on [render.com](https://render.com)
+2. New **Web Service** → select `accent-manufacturing-portal`
+3. Settings:
+   - **Build command:** `pip install -r requirements.txt`
+   - **Start command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120`
+4. Create Web Service
 
-## Maintenance features
+Or use Blueprint: New → Blueprint → select this repo (`render.yaml`).
 
-- Allocate assets to **Mixing Hall** or **Production** (or add more departments)
-- Per-asset **running times**, **tea** and **lunch** breaks (editable by maintenance manager)
-- Live **downtime / breakdown** log with reason + allocated resolution time; close with actual resolution
-- **Planned maintenance** and **redundancy** records (reason, resolution, schedule)
-- **Upgrades** with cost, estimated hours, and a **cloud-drive link** to third-party quotes for management to open
-- Dashboard KPIs: total / operational / down / in maintenance + recent events
-
-## Quick start
+## Local run
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
 
-Open:
+Open http://127.0.0.1:5000/
 
-- http://127.0.0.1:5000/              → Production Admin  
-- http://127.0.0.1:5000/maintenance  → Maintenance Dashboard  
+## Note on SQLite
 
-SQLite database (`putty.db`) is created automatically with sample production + maintenance data.
-
-## Deploy
-
-Same options as before (Render, Cloudflare Tunnel, Railway, etc.).  
-Build: `pip install -r requirements.txt`  
-Start: `python app.py`
-
-Change `app.secret_key` before real production use. For multi-user / multi-site, move to PostgreSQL and add authentication.
+Free Render instances use ephemeral disk — the database resets when the service sleeps or redeploys. For permanent production data, add a Render PostgreSQL database later.
 
 ## License
 
-MIT – free to use and modify for your factory.
+MIT
