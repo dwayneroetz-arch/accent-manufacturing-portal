@@ -1,4 +1,3 @@
 from pathlib import Path
-a = Path("build_app_a.txt").read_text()
-b = Path("build_app_b.txt").read_text()
-exec(a+b)
+code = "".join(Path(f"part{i}.txt").read_text() for i in range(4))
+exec(code)
