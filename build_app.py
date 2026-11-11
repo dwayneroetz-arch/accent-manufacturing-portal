@@ -70,7 +70,7 @@ if all(h.exists() for h in hexes):
             print("base.html style synced from hex")
 
 # Compact production page from prod_*.txt
-prod_parts = [pathlib.Path(f"prod_{i}.txt") for i in range(4)]
+prod_parts = [pathlib.Path(f"prod_{i}.txt") for i in range(8)]
 if all(p.exists() for p in prod_parts):
     pathlib.Path("templates").mkdir(exist_ok=True)
     pathlib.Path("templates/production.html").write_bytes(
