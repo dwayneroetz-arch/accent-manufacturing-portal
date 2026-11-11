@@ -40,6 +40,7 @@ def extract_with_fixes():
 if not extract_clean():
     extract_with_fixes()
 
+# Theme from hex + production compact CSS
 hexes = [pathlib.Path(f"static/th{i}.hex") for i in range(4)]
 if all(h.exists() for h in hexes):
     theme_css = bytes.fromhex("".join(h.read_text().strip() for h in hexes)).decode("utf-8")
@@ -68,16 +69,23 @@ if all(h.exists() for h in hexes):
             base.write_text(html)
             print("base.html style synced from hex")
 
+# Prefer pa_*.txt (12 small parts), fall back to prod_*.txt
+pa_parts = [pathlib.Path(f"pa_{i}.txt") for i in range(12)]
 prod_parts = [pathlib.Path(f"prod_{i}.txt") for i in range(8)]
-if all(p.exists() for p in prod_parts) and all(p.stat().st_size > 20 for p in prod_parts):
+if all(p.exists() for p in pa_parts) and all(p.stat().st_size > 20 for p in pa_parts):
+    pathlib.Path("templates").mkdir(exist_ok=True)
+    pathlib.Path("templates/production.html").write_bytes(
+        base64.b64decode("".join(p.read_text().strip() for p in pa_parts))
+    )
+    print("production.html compact layout written (pa_*)")
+elif all(p.exists() for p in prod_parts) and all(p.stat().st_size > 20 for p in prod_parts):
     pathlib.Path("templates").mkdir(exist_ok=True)
     pathlib.Path("templates/production.html").write_bytes(
         base64.b64decode("".join(p.read_text().strip() for p in prod_parts))
     )
-    print("production.html compact layout written")
+    print("production.html compact layout written (prod_*)")
 else:
-    missing = [str(p) for p in prod_parts if not p.exists() or p.stat().st_size <= 20]
-    print("production compact parts incomplete, skipping:", missing)
+    print("production compact parts incomplete, keeping package template")
 
 app_path = pathlib.Path("app.py")
 app = app_path.read_text()
