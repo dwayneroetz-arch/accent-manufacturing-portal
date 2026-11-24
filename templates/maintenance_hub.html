@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Maintenance Hub – Accent{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h1 class="screen-title mb-0"><i class="bi bi-wrench-adjustable me-2"></i>Maintenance Hub</h1>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('task_new') }}" class="btn btn-primary btn-sm">+ New Task</a>
+    <a href="{{ url_for('quote_new') }}" class="btn btn-outline-warning btn-sm">Request Quote</a>
+    <a href="{{ url_for('fuel_new') }}" class="btn btn-outline-info btn-sm">Order Fuel</a>
+    <a href="{{ url_for('suppliers') }}" class="btn btn-outline-light btn-sm">Suppliers</a>
+    <a href="{{ url_for('maintenance_history') }}" class="btn btn-outline-secondary btn-sm">History</a>
+    <a href="{{ url_for('maintenance') }}" class="btn btn-outline-secondary btn-sm">Classic View</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header border-secondary d-flex justify-content-between">
+        <span>Open Tasks</span>
+        <a href="{{ url_for('task_new') }}" class="btn btn-sm btn-outline-light">Add</a>
+      </div>
+      <div class="card-body p-0">
+        {% if open_tasks %}
+        <ul class="list-group list-group-flush">
+          {% for t in open_tasks %}
+          <li class="list-group-item bg-transparent d-flex justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ t.title }}</div>
+              <small class="text-secondary">{{ t.tracking_no }} · {{ t.asset_code or '—' }} · {{ t.priority }}</small>
+            </div>
+            <span class="badge bg-{{ 'danger' if t.priority=='High' else 'warning' if t.priority=='Medium' else 'secondary' }}">{{ t.status }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="p-3 text-secondary mb-0">No open tasks</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header border-secondary">Pending Quotes</div>
+      <div class="card-body p-0">
+        {% if pending_quotes %}
+        <ul class="list-group list-group-flush">
+          {% for q in pending_quotes %}
+          <li class="list-group-item bg-transparent">
+            <div class="fw-semibold">{{ q.description[:60] }}{% if q.description|length > 60 %}…{% endif %}</div>
+            <small class="text-secondary">{{ q.tracking_no }} · {{ q.company or 'Supplier' }}</small>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="p-3 text-secondary mb-0">No pending quotes</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header border-secondary">Recent Tracking #s</div>
+      <div class="card-body p-0">
+        {% if open_tracking %}
+        <ul class="list-group list-group-flush">
+          {% for tr in open_tracking %}
+          <li class="list-group-item bg-transparent d-flex justify-content-between">
+            <div>
+              <code class="text-info">{{ tr.tracking_no }}</code>
+              <div class="small">{{ tr.title }}</div>
+            </div>
+            <span class="badge bg-secondary">{{ tr.type }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="p-3 text-secondary mb-0">No open tracking numbers yet</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header border-secondary">Quick Fuel Orders</div>
+      <div class="card-body">
+        {% if recent_fuel %}
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Tracking</th><th>Litres</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+          {% for f in recent_fuel %}
+          <tr>
+            <td><code>{{ f.tracking_no }}</code></td>
+            <td>{{ f.litres }}</td>
+            <td>{{ f.status }}</td>
+            <td class="small">{{ f.created_at[:10] if f.created_at else '' }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="text-secondary mb-0">No fuel orders yet</p>
+        {% endif %}
+        <a href="{{ url_for('fuel_new') }}" class="btn btn-sm btn-outline-info mt-2">New Fuel Order</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header border-secondary">Suppliers ({{ suppliers|length }})</div>
+      <div class="card-body">
+        {% if suppliers %}
+        <ul class="list-unstyled mb-2">
+          {% for s in suppliers[:5] %}
+          <li class="mb-1">{{ s.company }} <small class="text-secondary">– {{ s.contact_name or '' }}</small></li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-secondary">No suppliers added yet</p>
+        {% endif %}
+        <a href="{{ url_for('suppliers') }}" class="btn btn-sm btn-outline-light">Manage Suppliers</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
