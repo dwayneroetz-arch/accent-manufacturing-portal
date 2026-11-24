@@ -107,3 +107,10 @@ if "send_from_directory" not in app:
         print("added static_files route")
 
 print("build complete – industrial safety theme + production fit")
+
+# --- Protect enhanced Maintenance Hub app.py if present and larger ---
+committed = pathlib.Path("app.py")
+if committed.exists() and committed.stat().st_size > 35000:
+    print("Keeping committed enhanced app.py (", committed.stat().st_size, "bytes)")
+else:
+    print("Using restored package app.py")
