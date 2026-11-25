@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Quote Ready – {{ tracking_no }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:720px">
+  <div class="card-body">
+    <h2 class="h4 text-success">Quote request created</h2>
+    <p>Tracking number: <code class="text-info fs-5">{{ tracking_no }}</code></p>
+    <p>Supplier: <strong>{{ supplier.company }}</strong></p>
+    <hr>
+    <p class="mb-2">Open a pre-filled email or WhatsApp:</p>
+    <a href="{{ mailto }}" class="btn btn-primary mb-2 me-2">Open Email to Supplier</a>
+    {% if wa %}
+    <a href="{{ wa }}" target="_blank" class="btn btn-success mb-2">Open WhatsApp</a>
+    {% endif %}
+    <pre class="bg-dark p-3 rounded small mt-3" style="white-space:pre-wrap">{{ body }}</pre>
+    <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm mt-2">← Back to Hub</a>
+  </div>
+</div>
+{% endblock %}

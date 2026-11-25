@@ -20,7 +20,7 @@
       </div>
       <div class="mb-3">
         <label class="form-label">Asset (recommended)</label>
-        <select name="asset_code" class="form-selectselect">
+        <select name="asset_code" class="form-select">
           <option value="">— None —</option>
           {% for a in assets %}
           <option value="{{ a.code }}">{{ a.code }} – {{ a.name }}</option>

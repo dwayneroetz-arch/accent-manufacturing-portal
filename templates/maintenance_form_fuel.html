@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Order Fuel – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="screen-title mb-0">Order Fuel</h1>
+  <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+</div>
+<div class="card" style="max-width:480px">
+  <div class="card-body">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Litres *</label>
+        <input type="number" name="litres" class="form-control" step="1" min="1" required placeholder="e.g. 200">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Notes</label>
+        <input type="text" name="notes" class="form-control" placeholder="Optional">
+      </div>
+      <button type="submit" class="btn btn-info">Create Order + Email Accounts</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

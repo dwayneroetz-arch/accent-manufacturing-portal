@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}History – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="screen-title mb-0">Activity History</h1>
+  <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+</div>
+{% if tracking %}
+<div class="alert alert-info">Showing history for <code>{{ tracking.tracking_no }}</code> – {{ tracking.title }} ({{ tracking.type }})</div>
+{% endif %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header border-secondary">Filter by Tracking #</div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item bg-transparent"><a href="{{ url_for('maintenance_history') }}">All recent</a></li>
+          {% for t in all_tracking %}
+          <li class="list-group-item bg-transparent">
+            <a href="{{ url_for('maintenance_history', tracking=t.tracking_no) }}">
+              <code>{{ t.tracking_no }}</code> <span class="small text-secondary">{{ t.type }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header border-secondary">Log</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>When</th><th>Tracking</th><th>Event</th><th>Message</th></tr></thead>
+          <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="small">{{ log.created_at[:16] if log.created_at else '' }}</td>
+            <td><code>{{ log.tracking_no }}</code></td>
+            <td>{{ log.event_type }}</td>
+            <td>{{ log.message }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="text-secondary p-3">No activity yet</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
