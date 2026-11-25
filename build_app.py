@@ -114,3 +114,36 @@ if committed.exists() and committed.stat().st_size > 35000:
     print("Keeping committed enhanced app.py (", committed.stat().st_size, "bytes)")
 else:
     print("Using restored package app.py")
+
+# --- Inject Maintenance Hub routes if present ---
+extra = pathlib.Path("maintenance_extra.py")
+app_path = pathlib.Path("app.py")
+if extra.exists() and app_path.exists():
+    app_txt = app_path.read_text()
+    if "def maintenance_hub" not in app_txt:
+        marker = "# ---------- PRODUCTION ----------"
+        if marker in app_txt:
+            app_txt = app_txt.replace(marker, extra.read_text() + "\n\n" + marker)
+            app_path.write_text(app_txt)
+            print("Injected Maintenance Hub routes into app.py")
+        else:
+            print("No PRODUCTION marker – could not inject")
+    else:
+        print("Maintenance Hub routes already present")
+
+# --- Inject schema/helpers ---
+schema_f = pathlib.Path("maintenance_schema.py")
+if schema_f.exists() and app_path.exists():
+    app_txt = app_path.read_text()
+    if "def next_tracking_no" not in app_txt:
+        needle = "def get_db():\n    conn = sqlite3.connect(DATABASE)\n    conn.row_factory = sqlite3.Row\n    return conn\n"
+        if needle in app_txt:
+            app_txt = app_txt.replace(needle, needle + "\n" + schema_f.read_text() + "\n")
+            if "init_db()" in app_txt and "_ensure_maint_hub_schema()" not in app_txt:
+                app_txt = app_txt.replace("init_db()\n", "init_db()\n_ensure_maint_hub_schema()\n", 1)
+            app_path.write_text(app_txt)
+            print("Injected schema + helpers")
+        else:
+            print("Could not find get_db needle")
+    else:
+        print("Schema/helpers already present")
