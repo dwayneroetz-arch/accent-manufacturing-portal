@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Plant Overview – Accent{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div>
+    <h1 class="h3 mb-1 fw-bold">Plant Overview</h1>
+    <div class="text-secondary small">Green = running · Amber = flushing · Red = offline / breakdown</div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="/admin" class="btn btn-primary btn-lg px-4"><i class="bi bi-gear-fill me-2"></i>Admin</a>
+    <a href="/maintenance" class="btn btn-outline-warning btn-lg px-4"><i class="bi bi-tools me-2"></i>Maintenance Dept</a>
+    <a href="/production" class="btn btn-outline-info btn-lg px-4"><i class="bi bi-boxes me-2"></i>Production Dept</a>
+  </div>
+</div>
+
+{% if open_breakdowns %}
+<div class="alert alert-danger mb-4">
+  <strong><i class="bi bi-exclamation-triangle me-1"></i> Open breakdowns</strong>
+  <ul class="mb-0 mt-2">
+  {% for b in open_breakdowns %}
+    <li>
+      <strong>{{ b.code }}</strong> – {{ b.name }}:
+      <em>{{ b.reason }}</em>
+      {% if b.repair_minutes %}<span class="text-secondary small">(est. {{ b.repair_minutes }} min)</span>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-header border-secondary"><strong>Extrusion lines B1 &amp; B2</strong></div>
+      <div class="card-body">
+        <div class="row g-2">
+          {% for ln in lines_b %}
+          <div class="col-md-6">
+            <a href="{{ url_for('line_detail', code=ln.code) }}" class="line-rect line-{{ ln.color }}">
+              <div>{{ ln.code }} · {{ ln.effective }}</div>
+              {% if ln.bd_reason %}<div class="line-sub text-light opacity-90">{{ ln.bd_reason }}</div>{% endif %}
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="card mb-4">
+      <div class="card-header border-secondary"><strong>Production lines L1 – L6</strong></div>
+      <div class="card-body">
+        {% for ln in lines_l %}
+        <a href="{{ url_for('line_detail', code=ln.code) }}" class="line-rect line-{{ ln.color }}">
+          <div>{{ ln.code }} · {{ ln.effective }}</div>
+          {% if ln.bd_reason %}<div class="line-sub text-light opacity-90">{{ ln.bd_reason }}</div>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card mb-4">
+      <div class="card-header border-secondary"><strong>Mixers</strong></div>
+      <div class="card-body">
+        {% for m in mixers %}
+        <span class="equip-chip chip-{{ m.color }}" title="{{ m.bd_reason or m.effective }}">
+          {{ m.code }} · {{ m.effective }}{% if m.bd_reason %} — {{ m.bd_reason }}{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header border-secondary"><strong>Plant equipment</strong></div>
+      <div class="card-body">
+        {% for s in support %}
+        <span class="equip-chip chip-{{ s.color }}" title="{{ s.bd_reason or s.effective }}">
+          {{ s.name }}{% if s.effective == 'breakdown' %} · breakdown{% endif %}{% if s.bd_reason %} — {{ s.bd_reason }}{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header border-secondary"><strong>Active orders</strong></div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Order</th><th>Product</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for o in orders_active %}
+          <tr>
+            <td class="fw-semibold">{{ o.order_number }}</td>
+            <td class="small">{{ o.product_name }}</td>
+            <td><span class="status-pill status-{{ o.status }}">{{ o.status }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-secondary text-center py-3">No active orders</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer border-secondary">
+        <a href="/production" class="btn btn-sm btn-outline-light w-100">Open Production</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
