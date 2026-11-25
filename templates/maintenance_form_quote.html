@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Request Quote – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="screen-title mb-0">Request Quote</h1>
+  <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+</div>
+<div class="card" style="max-width:640px">
+  <div class="card-body">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Supplier *</label>
+        <select name="supplier_id" class="form-select" required>
+          <option value="">— Select supplier —</option>
+          {% for s in suppliers %}
+          <option value="{{ s.id }}">{{ s.company }}{% if s.contact_name %} ({{ s.contact_name }}){% endif %}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">Add suppliers under Suppliers if the list is empty.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Asset (recommended)</label>
+        <select name="asset_code" class="form-selectselect">
+          <option value="">— None —</option>
+          {% for a in assets %}
+          <option value="{{ a.code }}">{{ a.code }} – {{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">What do you need quoted? *</label>
+        <input type="text" name="description" class="form-control" required placeholder="e.g. Rebuild hydraulic pump on compressor">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Message to supplier</label>
+        <textarea name="message" class="form-control" rows="3" placeholder="Extra details, symptoms, urgency..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-warning">Create Quote Request + Generate Email / WhatsApp</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

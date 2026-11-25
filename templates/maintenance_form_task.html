@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}New Task – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="screen-title mb-0">New Task</h1>
+  <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+</div>
+<div class="card" style="max-width:640px">
+  <div class="card-body">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Title *</label>
+        <input type="text" name="title" class="form-control" required placeholder="e.g. Replace tensioner on L2">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Asset</label>
+        <select name="asset_code" class="form-select">
+          <option value="">— Optional —</option>
+          {% for a in assets %}
+          <option value="{{ a.code }}">{{ a.code }} – {{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <label class="form-label">Priority</label>
+          <select name="priority" class="form-select">
+            <option>High</option>
+            <option selected>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label">Due Date</label>
+          <input type="date" name="due_date" class="form-control">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Description / Notes</label>
+        <textarea name="description" class="form-control" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Task + Tracking #</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -9,7 +9,7 @@
     <a href="{{ url_for('fuel_new') }}" class="btn btn-outline-info btn-sm">Order Fuel</a>
     <a href="{{ url_for('suppliers') }}" class="btn btn-outline-light btn-sm">Suppliers</a>
     <a href="{{ url_for('maintenance_history') }}" class="btn btn-outline-secondary btn-sm">History</a>
-    <a href="{{ url_for('maintenance') }}" class="btn btn-outline-secondary btn-sm">Classic View</a>
+    <a href="{{ url_for('maintenance') }}" class="btn btn-outline-secondary btn-sm">Classic / Breakdowns</a>
   </div>
 </div>
 
@@ -87,7 +87,7 @@
 <div class="row g-3">
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header border-secondary">Quick Fuel Orders</div>
+      <div class="card-header border-secondary">Recent Fuel Orders</div>
       <div class="card-body">
         {% if recent_fuel %}
         <table class="table table-sm mb-0">
@@ -116,12 +116,12 @@
       <div class="card-body">
         {% if suppliers %}
         <ul class="list-unstyled mb-2">
-          {% for s in suppliers[:5] %}
+          {% for s in suppliers[:6] %}
           <li class="mb-1">{{ s.company }} <small class="text-secondary">– {{ s.contact_name or '' }}</small></li>
           {% endfor %}
         </ul>
         {% else %}
-        <p class="text-secondary">No suppliers added yet</p>
+        <p class="text-secondary">No suppliers yet – add them as you go</p>
         {% endif %}
         <a href="{{ url_for('suppliers') }}" class="btn btn-sm btn-outline-light">Manage Suppliers</a>
       </div>
