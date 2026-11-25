@@ -83,16 +83,26 @@ Please reply with price, lead time and validity.
 
 Regards,
 Dwayne Roetz
-Maintenance – Accent Manufacturing
+Maintenance - Accent Manufacturing
 dwayneroetz@gmail.com
 WhatsApp: +27743502410"""
         import urllib.parse
-        mailto = f"mailto:{supplier['email'] or ''}?subject={urllib.parse.quote('Quote request – ' + tracking_no)}&body={urllib.parse.quote(body)}"
+        subject = f"Quote request - {tracking_no}"
+        to_email = supplier['email'] or ''
+        mailto = f"mailto:{to_email}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+        gmail = None
+        if to_email:
+            gmail = (
+                "https://mail.google.com/mail/?view=cm&fs=1"
+                f"&to={urllib.parse.quote(to_email)}"
+                f"&su={urllib.parse.quote(subject)}"
+                f"&body={urllib.parse.quote(body)}"
+            )
         phone = (supplier['phone'] or '').replace(' ', '').replace('+', '')
         if phone.startswith('0'):
             phone = '27' + phone[1:]
         wa = f"https://wa.me/{phone}?text={urllib.parse.quote(f'Hi, quote request {tracking_no} for {description}. Please see email or reply here.')}" if phone else None
-        return render_template("maintenance_quote_sent.html", tracking_no=tracking_no, mailto=mailto, wa=wa, supplier=supplier, body=body)
+        return render_template("maintenance_quote_sent.html", tracking_no=tracking_no, mailto=mailto, gmail=gmail, wa=wa, supplier=supplier, body=body)
     suppliers = conn.execute("SELECT * FROM suppliers ORDER BY company").fetchall()
     assets = conn.execute("SELECT code, name FROM assets ORDER BY sort_order").fetchall()
     conn.close()
@@ -128,11 +138,28 @@ Notes: {notes or 'None'}
 
 Thank you,
 Dwayne Roetz
-Maintenance – Accent Manufacturing
+Maintenance - Accent Manufacturing
 dwayneroetz@gmail.com
 WhatsApp: +27743502410"""
-        mailto = f"mailto:accounts.dept@accentmanuf.com?subject={urllib.parse.quote('Fuel Order – ' + tracking_no)}&body={urllib.parse.quote(body)}"
-        return render_template("maintenance_fuel_sent.html", tracking_no=tracking_no, litres=litres, mailto=mailto, body=body)
+        subject = f"Fuel Order - {tracking_no}"
+        to_email = "accounts.dept@accentmanuf.com"
+        gmail = (
+            "https://mail.google.com/mail/?view=cm&fs=1"
+            f"&to={urllib.parse.quote(to_email)}"
+            f"&su={urllib.parse.quote(subject)}"
+            f"&body={urllib.parse.quote(body)}"
+        )
+        mailto = f"mailto:{to_email}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+        return render_template(
+            "maintenance_fuel_sent.html",
+            tracking_no=tracking_no,
+            litres=litres,
+            mailto=mailto,
+            gmail=gmail,
+            body=body,
+            to_email=to_email,
+            subject=subject,
+        )
     conn.close()
     return render_template("maintenance_form_fuel.html")
 
