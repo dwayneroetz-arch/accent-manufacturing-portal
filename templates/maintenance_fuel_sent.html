@@ -4,11 +4,30 @@
 <div class="card" style="max-width:640px">
   <div class="card-body">
     <h2 class="h4 text-success">Fuel order created</h2>
-    <p>Tracking: <code class="text-info fs-5">{{ tracking_no }}</code> · {{ litres }} litres</p>
-    <p class="small text-secondary">Email will go to accounts.dept@accentmanuf.com</p>
-    <a href="{{ mailto }}" class="btn btn-primary mb-3">Open Email to Accounts</a>
-    <pre class="bg-dark p-3 rounded small" style="white-space:pre-wrap">{{ body }}</pre>
-    <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm mt-2">← Back to Hub</a>
+    <p>Tracking: <code class="text-info fs-5">{{ tracking_no }}</code> · <strong>{{ litres }}</strong> litres</p>
+    <p class="mb-3">Send this to <strong>{{ to_email or "accounts.dept@accentmanuf.com" }}</strong></p>
+
+    <div class="d-grid gap-2 mb-3">
+      {% if gmail %}
+      <a href="{{ gmail }}" target="_blank" rel="noopener" class="btn btn-danger btn-lg">
+        Open in Gmail & Send
+      </a>
+      {% endif %}
+      <a href="{{ mailto }}" class="btn btn-outline-primary">
+        Open in default Email app
+      </a>
+    </div>
+
+    <p class="small text-secondary mb-2">
+      After the email opens, click <strong>Send</strong>. The app cannot send mail by itself without your Gmail login.
+    </p>
+
+    <details class="mb-3">
+      <summary class="small">Preview message</summary>
+      <pre class="bg-dark text-light p-3 rounded small mt-2" style="white-space:pre-wrap">{{ body }}</pre>
+    </details>
+
+    <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Back to Hub</a>
   </div>
 </div>
 {% endblock %}
