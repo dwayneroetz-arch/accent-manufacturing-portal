@@ -81,7 +81,6 @@ if "send_from_directory" not in app:
 
 print("build complete")
 
-# Restore committed templates (package extract may overwrite maintenance.html)
 side_dir = pathlib.Path("_committed_templates")
 if side_dir.exists():
     pathlib.Path("templates").mkdir(exist_ok=True)
@@ -129,3 +128,35 @@ if "def _ensure_maint_hub_schema" in app_txt and "init_db()\n_ensure_maint_hub_s
             app_txt = parts[0] + "\ninit_db()\n_ensure_maint_hub_schema()\n" + parts[1]
             app_path.write_text(app_txt)
             print("Added _ensure_maint_hub_schema() call (rsplit)")
+
+plant = pathlib.Path("plant_patch.py")
+if plant.exists() and app_path.exists():
+    app_txt = app_path.read_text()
+    if "open_breakdowns" not in app_txt:
+        marker = "@app.route(\"/\")\ndef landing():"
+        if marker in app_txt:
+            start = app_txt.find(marker)
+            end_markers = ["# ---------- ADMIN", "@app.route(\"/admin\")", "# ---------- MAINTENANCE"]
+            end = -1
+            for em in end_markers:
+                i = app_txt.find(em, start + 10)
+                if i != -1:
+                    end = i
+                    break
+            if start != -1 and end != -1:
+                app_txt = app_txt[:start] + plant.read_text() + "\n\n" + app_txt[end:]
+                app_path.write_text(app_txt)
+                print("Patched landing + line_detail with breakdown reasons")
+            else:
+                print("Could not locate landing/line_detail block to patch")
+        else:
+            print("landing route marker not found")
+    else:
+        print("Plant breakdown reasons already present")
+
+for name in ("landing.html", "line_detail.html"):
+    side = pathlib.Path("_committed_templates") / name
+    dest = pathlib.Path("templates") / name
+    if side.exists():
+        dest.write_text(side.read_text())
+        print("Restored committed template", name)
