@@ -195,6 +195,37 @@ def maintenance_history():
     conn.close()
     return render_template("maintenance_history.html", logs=logs, tracking=tracking, all_tracking=all_tracking, selected=tracking_no)
 
+@app.route("/maintenance/asset/new", methods=["GET", "POST"])
+def asset_new():
+    conn = get_db()
+    if request.method == "POST":
+        code = (request.form.get("code") or "").strip().upper()
+        name = (request.form.get("name") or "").strip()
+        asset_type = request.form.get("asset_type") or "support"
+        parent_code = request.form.get("parent_code") or None
+        status = request.form.get("status") or "running"
+        if not code or not name:
+            flash("Code and name required", "error")
+            return redirect(url_for("asset_new"))
+        exists = conn.execute("SELECT id FROM assets WHERE code=?", (code,)).fetchone()
+        if exists:
+            flash(f"Asset code {code} already exists", "error")
+            return redirect(url_for("asset_new"))
+        max_sort = conn.execute("SELECT MAX(sort_order) FROM assets").fetchone()[0] or 0
+        conn.execute(
+            "INSERT INTO assets (code, name, asset_type, parent_code, status, sort_order) VALUES (?,?,?,?,?,?)",
+            (code, name, asset_type, parent_code, status, max_sort + 1)
+        )
+        conn.commit()
+        conn.close()
+        flash(f"Asset {code} added", "success")
+        return redirect(url_for("assets_list"))
+    parents = conn.execute(
+        "SELECT code, name FROM assets WHERE asset_type IN ('line_b','line_l','mixer','support') ORDER BY sort_order"
+    ).fetchall()
+    conn.close()
+    return render_template("maintenance_form_asset.html", parents=parents)
+
 @app.route("/maintenance/assets/list")
 def assets_list():
     conn = get_db()
