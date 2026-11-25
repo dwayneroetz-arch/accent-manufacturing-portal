@@ -139,11 +139,27 @@ if schema_f.exists() and app_path.exists():
         needle = "def get_db():\n    conn = sqlite3.connect(DATABASE)\n    conn.row_factory = sqlite3.Row\n    return conn\n"
         if needle in app_txt:
             app_txt = app_txt.replace(needle, needle + "\n" + schema_f.read_text() + "\n")
-            if "init_db()" in app_txt and "_ensure_maint_hub_schema()" not in app_txt:
-                app_txt = app_txt.replace("init_db()\n", "init_db()\n_ensure_maint_hub_schema()\n", 1)
             app_path.write_text(app_txt)
             print("Injected schema + helpers")
         else:
             print("Could not find get_db needle")
     else:
         print("Schema/helpers already present")
+
+# Always ensure the schema is applied at startup
+app_txt = app_path.read_text()
+if "def _ensure_maint_hub_schema" in app_txt and "init_db()\n_ensure_maint_hub_schema()" not in app_txt:
+    if "\ninit_db()\n\nif __name__" in app_txt:
+        app_txt = app_txt.replace("\ninit_db()\n\nif __name__", "\ninit_db()\n_ensure_maint_hub_schema()\n\nif __name__", 1)
+        app_path.write_text(app_txt)
+        print("Added _ensure_maint_hub_schema() call after init_db()")
+    elif "\ninit_db()\n" in app_txt:
+        parts = app_txt.rsplit("\ninit_db()\n", 1)
+        if len(parts) == 2:
+            app_txt = parts[0] + "\ninit_db()\n_ensure_maint_hub_schema()\n" + parts[1]
+            app_path.write_text(app_txt)
+            print("Added _ensure_maint_hub_schema() call (rsplit)")
+        else:
+            print("Could not locate init_db() call to append ensure")
+    else:
+        print("init_db() pattern not found for ensure call")
