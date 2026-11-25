@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Maintenance – Accent{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h1 class="h3 mb-0 fw-bold"><i class="bi bi-tools me-2"></i>Maintenance Dept</h1>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('maintenance_hub') }}" class="btn btn-warning">
+      <i class="bi bi-grid-1x2 me-1"></i> Maintenance Hub
+    </a>
+    <a href="{{ url_for('asset_new') }}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i> Add Asset
+    </a>
+    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#bdModal">
+      <i class="bi bi-exclamation-triangle me-1"></i> Log breakdown
+    </button>
+    <a href="/" class="btn btn-outline-light btn-sm">← Plant</a>
+  </div>
+</div>
+
+{% if open_bd %}
+<div class="alert alert-danger">
+  <strong>{{ open_bd|length }} open breakdown(s)</strong>
+  {% for b in open_bd %} · {{ b.code }}: {{ b.reason }}{% endfor %}
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card mb-3">
+      <div class="card-header border-secondary">Open / recent breakdowns</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Asset</th><th>Reason</th><th>Repair min</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+          {% for b in history %}
+          <tr>
+            <td class="fw-semibold">{{ b.code }}</td>
+            <td>{{ b.reason }}</td>
+            <td>{{ b.repair_minutes or '—' }}</td>
+            <td>{% if b.status=='open' %}<span class="text-danger fw-bold">OPEN</span>{% else %}closed{% endif %}</td>
+            <td>{% if b.status=='open' %}
+              <form method="post" action="{{ url_for('breakdown_close', bid=b.id) }}">
+                <button class="btn btn-sm btn-success">Clear</button>
+              </form>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-secondary p-3">No breakdowns logged yet</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+        <span>Plant assets</span>
+        <a href="{{ url_for('asset_new') }}" class="btn btn-sm btn-outline-light">+ Add</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for a in assets %}
+          <tr>
+            <td><code>{{ a.code }}</code></td>
+            <td>{{ a.name }}</td>
+            <td class="small text-secondary">{{ a.asset_type }}</td>
+            <td>{% if a.status=='breakdown' %}<span class="text-danger">breakdown</span>{% else %}<span class="text-success">{{ a.status }}</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header border-secondary">Maintenance store room</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Item</th><th>Qty</th><th>Adjust</th></tr></thead>
+          <tbody>
+          {% for s in stock %}
+          <tr>
+            <td>{{ s.name }} <span class="text-secondary small">{{ s.unit }}</span></td>
+            <td class="{% if s.qty < s.min_qty %}text-danger fw-bold{% endif %}">{{ "%.0f"|format(s.qty) }}</td>
+            <td>
+              <form method="post" action="{{ url_for('maint_stock_adjust', sid=s.id) }}" class="d-flex gap-1">
+                <input type="number" name="change" class="form-control form-control-sm" style="width:5rem" step="1" placeholder="+/-">
+                <button class="btn btn-sm btn-outline-light">OK</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-secondary p-3">No stock items</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="bdModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{{ url_for('breakdown_log') }}" class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">Log breakdown</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Asset *</label>
+          <select name="asset_id" class="form-select" required>
+            {% for a in assets %}
+            <option value="{{ a.id }}">{{ a.code }} – {{ a.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Reason *</label>
+          <input type="text" name="reason" class="form-control" required placeholder="e.g. Motor overheating">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Estimated repair time (minutes)</label>
+          <input type="number" name="repair_minutes" class="form-control" placeholder="60">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Reported by</label>
+          <input type="text" name="reported_by" class="form-control" value="Maintenance">
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="submit" class="btn btn-danger">Log breakdown</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

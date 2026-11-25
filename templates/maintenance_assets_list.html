@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Assets – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h1 class="screen-title mb-0">All Assets</h1>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('asset_new') }}" class="btn btn-primary btn-sm">+ Add Asset</a>
+    <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+  </div>
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Parent</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for a in assets %}
+        <tr>
+          <td><code class="text-info">{{ a.code }}</code></td>
+          <td class="fw-semibold">{{ a.name }}</td>
+          <td>{{ a.asset_type }}</td>
+          <td class="small text-secondary">{{ a.parent_code or '—' }}</td>
+          <td>{% if a.status=='breakdown' %}<span class="badge bg-danger">breakdown</span>{% else %}<span class="badge bg-success">{{ a.status }}</span>{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-secondary p-3">No assets</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

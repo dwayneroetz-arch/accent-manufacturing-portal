@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Add Asset – Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="screen-title mb-0">Add Asset</h1>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+    <a href="{{ url_for('maintenance') }}" class="btn btn-outline-secondary btn-sm">Classic</a>
+  </div>
+</div>
+<div class="card" style="max-width:560px">
+  <div class="card-body">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Code *</label>
+        <input type="text" name="code" class="form-control" required placeholder="e.g. L7 or COMP-2" style="text-transform:uppercase">
+        <div class="form-text">Short unique tag used everywhere in the portal</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Name *</label>
+        <input type="text" name="name" class="form-control" required placeholder="e.g. Line 7 Extruder">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Type *</label>
+        <select name="asset_type" class="form-select" required>
+          <option value="line_b">Extrusion line (B)</option>
+          <option value="line_l">Production line (L)</option>
+          <option value="mixer">Mixer</option>
+          <option value="support">Support (compressor, generator, forklift…)</option>
+          <option value="component">Component (under a parent line)</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Parent line (for components)</label>
+        <select name="parent_code" class="form-select">
+          <option value="">— None —</option>
+          {% for a in parents %}
+          <option value="{{ a.code }}">{{ a.code }} – {{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="running" selected>Running</option>
+          <option value="maintenance">In maintenance</option>
+          <option value="breakdown">Breakdown</option>
+          <option value="idle">Idle</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Asset</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
