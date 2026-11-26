@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Database info{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4">
+  <h1 class="screen-title mb-0">Database info</h1>
+  <a href="{{ url_for('maintenance_hub') }}" class="btn btn-outline-light btn-sm">← Hub</a>
+</div>
+<div class="card" style="max-width:640px">
+  <div class="card-body">
+    <p><strong>Database file:</strong> <code>{{ database }}</code></p>
+    <p><strong>On Render:</strong> {{ 'yes' if render else 'no' }}</p>
+    <p><strong>Persistent disk detected:</strong>
+      {% if persistent %}<span class="text-success">yes</span>{% else %}<span class="text-danger">no – data will be lost on redeploy</span>{% endif %}
+    </p>
+    <h2 class="h6 mt-3">Row counts</h2>
+    <ul>
+    {% for k,v in counts.items() %}
+      <li>{{ k }}: {{ v }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

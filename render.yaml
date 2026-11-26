@@ -10,3 +10,7 @@ services:
         value: "3.12.0"
       - key: RENDER
         value: "true"
+      # For permanent data: upgrade to Starter, add a disk mounted at /var/data,
+      # then set PORTAL_DB=/var/data/accent_portal.db
+      # - key: PORTAL_DB
+      #   value: /var/data/accent_portal.db
