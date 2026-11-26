@@ -232,3 +232,82 @@ def assets_list():
     assets = conn.execute("SELECT * FROM assets ORDER BY sort_order, code").fetchall()
     conn.close()
     return render_template("maintenance_assets_list.html", assets=assets)
+
+@app.route("/maintenance/suppliers/export")
+def suppliers_export():
+    """Download suppliers as JSON backup (survives Render redeploys if you re-import)."""
+    import json
+    from flask import Response
+    conn = get_db()
+    rows = conn.execute("SELECT company, contact_name, email, phone, speciality, notes, created_at FROM suppliers ORDER BY company").fetchall()
+    conn.close()
+    data = [dict(r) for r in rows]
+    return Response(
+        json.dumps(data, indent=2),
+        mimetype="application/json",
+        headers={"Content-Disposition": "attachment; filename=suppliers_backup.json"},
+    )
+
+@app.route("/maintenance/suppliers/import", methods=["POST"])
+def suppliers_import():
+    """Import suppliers from JSON backup."""
+    import json
+    f = request.files.get("file")
+    if not f:
+        flash("Choose a JSON file to import", "error")
+        return redirect(url_for("suppliers"))
+    try:
+        data = json.loads(f.read().decode("utf-8"))
+    except Exception:
+        flash("Invalid JSON file", "error")
+        return redirect(url_for("suppliers"))
+    if not isinstance(data, list):
+        flash("JSON must be a list of suppliers", "error")
+        return redirect(url_for("suppliers"))
+    conn = get_db()
+    added = 0
+    for item in data:
+        company = (item.get("company") or "").strip()
+        if not company:
+            continue
+        exists = conn.execute("SELECT id FROM suppliers WHERE company=?", (company,)).fetchone()
+        if exists:
+            continue
+        conn.execute(
+            """INSERT INTO suppliers (company, contact_name, email, phone, speciality, notes, created_at)
+               VALUES (?,?,?,?,?,?,?)""",
+            (
+                company,
+                item.get("contact_name"),
+                item.get("email"),
+                item.get("phone"),
+                item.get("speciality"),
+                item.get("notes"),
+                item.get("created_at") or datetime.now().isoformat(timespec="seconds"),
+            ),
+        )
+        added += 1
+    conn.commit()
+    conn.close()
+    flash(f"Imported {added} supplier(s)", "success")
+    return redirect(url_for("suppliers"))
+
+@app.route("/maintenance/db-info")
+def db_info():
+    """Show where the database lives (for diagnosing lost data)."""
+    persistent = os.path.isdir("/var/data") or (os.environ.get("PORTAL_DB") or "").startswith("/var/data")
+    conn = get_db()
+    counts = {}
+    for table in ("suppliers", "tasks", "quotes", "fuel_orders", "tracking", "assets", "breakdowns"):
+        try:
+            counts[table] = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        except Exception:
+            counts[table] = "n/a"
+    conn.close()
+    return render_template(
+        "maintenance_db_info.html",
+        database=DATABASE,
+        persistent=persistent,
+        counts=counts,
+        render=bool(os.environ.get("RENDER")),
+    )
