@@ -133,10 +133,10 @@ plant = pathlib.Path("plant_patch.py")
 if plant.exists() and app_path.exists():
     app_txt = app_path.read_text()
     if "open_breakdowns" not in app_txt:
-        marker = "@app.route(\"/\")\ndef landing():"
+        marker = '@app.route("/")\ndef landing():'
         if marker in app_txt:
             start = app_txt.find(marker)
-            end_markers = ["# ---------- ADMIN", "@app.route(\"/admin\")", "# ---------- MAINTENANCE"]
+            end_markers = ["# ---------- ADMIN", '@app.route("/admin")', "# ---------- MAINTENANCE"]
             end = -1
             for em in end_markers:
                 i = app_txt.find(em, start + 10)
@@ -160,3 +160,40 @@ for name in ("landing.html", "line_detail.html"):
     if side.exists():
         dest.write_text(side.read_text())
         print("Restored committed template", name)
+
+# Prefer PORTAL_DB / Render persistent disk so data survives redeploys
+app_path = pathlib.Path("app.py")
+if app_path.exists():
+    txt = app_path.read_text()
+    if "accent_portal.db" not in txt.split("def get_db")[0]:
+        old = (
+            'DATABASE = os.environ.get("PORTAL_DB") or (\n'
+            '    os.path.join(os.path.dirname(__file__), "putty.db") if os.environ.get("RENDER")\n'
+            '    else "/tmp/accent_putty.db"\n'
+            ')'
+        )
+        new = (
+            '# Prefer PORTAL_DB, then Render persistent disk /var/data, else local file\n'
+            '_db_candidates = []\n'
+            'if os.environ.get("PORTAL_DB"):\n'
+            '    _db_candidates.append(os.environ["PORTAL_DB"])\n'
+            'if os.path.isdir("/var/data"):\n'
+            '    _db_candidates.append("/var/data/accent_portal.db")\n'
+            'if os.environ.get("RENDER"):\n'
+            '    _db_candidates.append(os.path.join(os.path.dirname(__file__), "putty.db"))\n'
+            '_db_candidates.append("/tmp/accent_putty.db")\n'
+            'DATABASE = _db_candidates[0]\n'
+            'try:\n'
+            '    _db_dir = os.path.dirname(DATABASE)\n'
+            '    if _db_dir:\n'
+            '        os.makedirs(_db_dir, exist_ok=True)\n'
+            'except Exception:\n'
+            '    pass'
+        )
+        if old in txt:
+            app_path.write_text(txt.replace(old, new, 1))
+            print("DATABASE path updated for persistent disk")
+        else:
+            print("DATABASE assignment pattern not found – skip")
+    else:
+        print("DATABASE already uses accent_portal.db")
